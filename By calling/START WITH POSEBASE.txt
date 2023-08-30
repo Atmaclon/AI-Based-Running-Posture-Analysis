@@ -1,0 +1,3 @@
+requires python
+coded with python 3.10
+preinstallation required Mediapipe,FFmpeg
