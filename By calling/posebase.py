@@ -137,6 +137,11 @@ while(True):
         partdict["left_hip_x"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.LEFT_HIP].x)*frame_width)
         partdict["left_hip_y"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.LEFT_HIP].y)*frame_height)
         partdict["left_hip_z"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.LEFT_HIP].z)*frame_width)
+
+        #LEFT SHOULDER
+        partdict["left_should_x"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.LEFT_SHOULDER].x)*frame_width)
+        partdict["left_should_y"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.LEFT_SHOULDER].y)*frame_height)
+        partdict["left_should_z"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.LEFT_SHOULDER].z)*frame_width)
         
         #KNEE
         partdict["left_knee_x"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.LEFT_KNEE].x)*frame_width)
@@ -158,6 +163,11 @@ while(True):
         partdict["right_hip_x"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.RIGHT_HIP].x)*frame_width)
         partdict["right_hip_y"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.RIGHT_HIP].y)*frame_height)
         partdict["right_hip_z"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.RIGHT_HIP].z)*frame_width)
+
+        #RIGHT SHOULDER
+        partdict["right_should_x"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.RIGHT_SHOULDER].x)*frame_width)
+        partdict["right_should_y"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.RIGHT_SHOULDER].y)*frame_height)
+        partdict["right_should_z"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.RIGHT_SHOULDER].z)*frame_width)
         
         #KNEE
         partdict["right_knee_x"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.RIGHT_KNEE].x)*frame_width)
@@ -169,7 +179,7 @@ while(True):
     #img= call landing with arguments
     #img,ox,oy,slope,count,ang,prev_ground_assumption,flag,c=findlanding(img,ox,oy,slope,count,ang,prev_ground_assumption,flag,c,facing_left,frame_width,font_size,partdict)
     #img= call lean with arguments
-    #img,facing_dir_prev=findlean(img,facing_left,font_size,partdict,facing_dir_prev)
+    img,facing_dir_prev=findlean(img,facing_left,font_size,partdict,facing_dir_prev)
     #img=call hip with arguments
     #img,count_hip,flagg=findhipdrop(img,flagg,count_hip,font_size,partdict)
     

@@ -23,12 +23,18 @@ def findlean(img,facing_left,font_size,partdict,facing_dir_prev):
     
     hip_middle_x=(partdict["left_hip_x"]+ partdict["right_hip_x"])/2
     hip_middle_y=(partdict["left_hip_y"]+ partdict["right_hip_y"])/2
+
+    should_middle_x=(partdict["left_should_x"]+ partdict["right_should_x"])/2
+    should_middle_y=(partdict["left_should_y"]+ partdict["right_should_y"])/2
     
     cv2.line(img,(int(hip_middle_x),0),(int(hip_middle_x),int(hip_middle_y)),(255,255,0),3)
     cv2.line(img,(int(head_middle_x),int(head_middle_y)),(int(hip_middle_x),int(hip_middle_y)),(255,0,0),3)
     
     angle=angle3(( partdict["left_knee_x"], partdict["left_knee_y"]),( partdict["left_heel_x"], partdict["left_heel_y"]),( partdict["left_toe_x"], partdict["left_toe_y"]))  #lean angle
     ang=angle3((int(hip_middle_x),0),(int(hip_middle_x),int(hip_middle_y)),(int(head_middle_x),int(head_middle_y)))  #foot angle to check foot in air condition
+    
+    headAngle=angle3((int(hip_middle_x),0), (int(should_middle_x),int(should_middle_y)),(int(head_middle_x),int(head_middle_y)))
+    shouldAngle=angle3((int(hip_middle_x),0),(int(hip_middle_x),int(hip_middle_y)), (int(should_middle_x),int(should_middle_y)))
     print("lhip z",  partdict["left_hip_z"])
     print("rhip z",  partdict["right_hip_z"])
     print("angle", ang)
@@ -51,12 +57,18 @@ def findlean(img,facing_left,font_size,partdict,facing_dir_prev):
     try:
         if(ang>5 and ang<60):
             text="Forward Lean"
-            color=(0,255,0)
+
+            if(shouldAngle>=12):
+                text="Thoracic kyphosis"
+            elif(headAngle>=15):
+                text="Forward Head"
+
+            color=(0,0,255)
         elif(ang>=0 and ang<=5):
-            text="No lean"
+            text="Good Posture"
             color=(255,255,255)
         elif(ang>250):
-            text="Backward lean"
+            text="Sway Back Posture"
             color=(0,0,255)
         else:
             text="Improper lean"
