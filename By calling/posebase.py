@@ -9,54 +9,14 @@ import math
 import numpy as np
 import os
 import ffmpeg
-from baseangle import findlean  
-from baselanding import findlanding  
-from basehip import findhipdrop
+from baseangle import findlean
+import socket
+import socketserver
 
 NoneType = type(None)
 
-def check_rotation(path_video_file):
-    # this returns meta-data of the video file in form of a dictionary
-    meta_dict = ffmpeg.probe(path_video_file)
-
-    # from the dictionary, meta_dict['streams'][0]['tags']['rotate'] is the key
-    # we are looking for
-    rotateCode = None
-    try:
-        if int(meta_dict['streams'][0]['tags']['rotate']) == 90:
-            rotateCode = cv2.ROTATE_90_CLOCKWISE
-        elif int(meta_dict['streams'][0]['tags']['rotate']) == 180:
-            rotateCode = cv2.ROTATE_180
-        elif int(meta_dict['streams'][0]['tags']['rotate']) == 270:
-            rotateCode = cv2.ROTATE_90_COUNTERCLOCKWISE
-    except KeyError:
-        pass
-    return rotateCode
-
-def correct_rotation(frame, rotateCode):  
-     return cv2.rotate(frame, rotateCode) 
-
-#from original code
-def pointIsOnLine(m, c, x, y):
-     
-    # If (x, y) satisfies the
-    # equation of the line
-    if (y == ((m * x) + c)):
-        return True
- 
-    return False
-
-def Ang_bw_TwoPoints(x1, y1, x2, y2):
-    angle = math.atan2(x2-x1, y2-y1)
-    print("angle1: ", angle)
-    angle = angle * 180 / 3.14
-    print("angle2: ", angle)
-    return angle
-    
-def calculateDistance(x1,y1,x2,y2):  
-     dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)  
-     return dist 
-
+sock= socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+serverAddressPort=("127.0.0.1",5052)
 
 #variables
 ox=0
@@ -102,6 +62,7 @@ result=cv2.VideoWriter('filename.avi', cv2.VideoWriter_fourcc(*'MJPG'),10, size)
 
 partdict={} #empty dictionary for parts
 while(True):
+
     ret,img = cap.read()
     
     if not ret:
@@ -112,11 +73,21 @@ while(True):
     
     imgRGB=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
     results=pose.process(imgRGB)
-
+    
     #print(results.pose_landmarks)
-
+    data=[]
     if (results.pose_landmarks):
         mpDraw.draw_landmarks(img,results.pose_landmarks,mpPose.POSE_CONNECTIONS)
+
+        lmList=[]
+        lmList=results.pose_landmarks.landmark
+
+        for id,lm in enumerate(lmList):
+            #print(lm)
+            data.extend([lm.x,frame_height-lm.y,lm.z])
+        sock.sendto(str.encode(str(data)),serverAddressPort)
+        #print(data)
+
     
     
     try:
@@ -137,6 +108,11 @@ while(True):
         partdict["left_hip_x"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.LEFT_HIP].x)*frame_width)
         partdict["left_hip_y"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.LEFT_HIP].y)*frame_height)
         partdict["left_hip_z"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.LEFT_HIP].z)*frame_width)
+
+        #LEFT SHOULDER
+        partdict["left_should_x"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.LEFT_SHOULDER].x)*frame_width)
+        partdict["left_should_y"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.LEFT_SHOULDER].y)*frame_height)
+        partdict["left_should_z"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.LEFT_SHOULDER].z)*frame_width)
         
         #KNEE
         partdict["left_knee_x"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.LEFT_KNEE].x)*frame_width)
@@ -158,6 +134,11 @@ while(True):
         partdict["right_hip_x"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.RIGHT_HIP].x)*frame_width)
         partdict["right_hip_y"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.RIGHT_HIP].y)*frame_height)
         partdict["right_hip_z"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.RIGHT_HIP].z)*frame_width)
+
+        #RIGHT SHOULDER
+        partdict["right_should_x"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.RIGHT_SHOULDER].x)*frame_width)
+        partdict["right_should_y"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.RIGHT_SHOULDER].y)*frame_height)
+        partdict["right_should_z"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.RIGHT_SHOULDER].z)*frame_width)
         
         #KNEE
         partdict["right_knee_x"]=int((results.pose_landmarks.landmark[mpPose.PoseLandmark.RIGHT_KNEE].x)*frame_width)
@@ -166,14 +147,9 @@ while(True):
     except:
         continue
     
-    #img= call landing with arguments
-    #img,ox,oy,slope,count,ang,prev_ground_assumption,flag,c=findlanding(img,ox,oy,slope,count,ang,prev_ground_assumption,flag,c,facing_left,frame_width,font_size,partdict)
-    #img= call lean with arguments
-    #img,facing_dir_prev=findlean(img,facing_left,font_size,partdict,facing_dir_prev)
-    #img=call hip with arguments
-    #img,count_hip,flagg=findhipdrop(img,flagg,count_hip,font_size,partdict)
-    
-    #img=call landing with arguments
+  
+    img,facing_dir_prev=findlean(img,facing_left,font_size,partdict,facing_dir_prev)
+
     cv2.imshow("Image",img)
     cv2.imwrite(os.path.join('folder',"{:d}.jpg".format(count)), img)
     a=0
